@@ -1,0 +1,18 @@
+diff --git a/server.mjs b/server.mjs
+--- a/server.mjs
++++ b/server.mjs
+@@ -541,6 +541,14 @@ const server = createServer(async (request, response) => {
+     }
+     if (anthropic) {
+       if (backend === 'cloud' && input.tools?.length) throw fail(400, 'Cloud mode does not support client tools, even with tool_choice: none.');
++      if (Array.isArray(input.system)) input.system = input.system.map(block => {
++        if (!block || typeof block !== 'object' || Array.isArray(block)) return block;
++        const { cache_control, ...rest } = block; return rest;
++      });
++      if (Array.isArray(input.tools)) input.tools = input.tools.map(tool => {
++        if (!tool || typeof tool !== 'object' || Array.isArray(tool)) return tool;
++        const { cache_control, ...rest } = tool; return rest;
++      });
+       input = validateAnthropic(input, models, efforts);
+       if (backend === 'cloud') validateCloud(input);
+       const result = await execute(input);
